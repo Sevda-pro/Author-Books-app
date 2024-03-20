@@ -37,17 +37,22 @@ const newauthor = (req, res) => {
  * @param {Object} req - The request object containing author details in the body.
  * @param {Object} res - The response object used for redirecting.
  */
-const postauthor = async (req, res) => {
-    const author = new Author({
-        name: req.body.name
-    })
+const postauthor = async (req, res, next) => {
     try {
-        const newAuthor = await author.save()
-        res.redirect(`authors/${newAuthor.id}`)
+        if (req.body.name.length > 3) {
+            const author = new Author({
+                name: req.body.name
+            });
+            const newAuthor = await author.save();
+            res.redirect(`authors/${newAuthor.id}`);
+        } else {
+            next(errorhandler('Name should be longer than 3 characters.', 400));
+        }
     } catch (err) {
-        next(errorhandler(err.message, 500))
+        next(errorhandler(err.message, 500));
     }
 }
+
 
 /**
  * Handle GET requests to retrieve a specific author by ID and render their details along with associated books.
@@ -87,12 +92,16 @@ const editauthor = async (req, res) => {
  * @param {Object} res - The response object used for redirecting or rendering error messages.
  */
 const updateauthor = async (req, res) => {
-    let author
+    let author;
     try {
         author = await Author.findById(req.params.id)
-        author.name = req.body.name
-        await author.save()
-        res.redirect(`/authors/${author.id}`)
+        if (req.body.name.length > 3) {
+            author.name = req.body.name
+            await author.save()
+            res.redirect(`/authors/${author.id}`)
+        } else {
+            next(errorhandler('Name should be longer than 3 characters.', 400));
+        }
     } catch (err) {
         next(errorhandler(err.message, 500))
     }

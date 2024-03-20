@@ -46,18 +46,23 @@ const newbook = async (req, res) => {
 */
 
 const postbook = async (req, res) => {
-    const book = new Book({
-        title: req.body.title,
-        author: req.body.author,
-        publishDate: new Date(req.body.publishDate),
-        pageCount: req.body.pageCount,
-        description: req.body.description
-    })
-    saveCover(book, req.body.cover)
-
     try {
-        const newBook = await book.save()
-        res.redirect(`books/${newBook.id}`)
+        if (req.body.title.length > 3) {
+            const book = new Book({
+                title: req.body.title,
+                author: req.body.author,
+                publishDate: new Date(req.body.publishDate),
+                pageCount: req.body.pageCount,
+                description: req.body.description
+            });
+            saveCover(book, req.body.cover);
+
+            const newBook = await book.save();
+            res.redirect(`books/${newBook.id}`);
+        }
+        else{
+            next(errorhandler("Title should be longer than 3 characters.",400))
+        }
     } catch {
         renderNewPage(res, book, true)
     }
@@ -102,17 +107,22 @@ const editbook = async (req, res) => {
 const updatebook = async (req, res) => {
     let book;
     try {
-        book = await Book.findById(req.params.id)
-        book.title = req.body.title
-        book.author = req.body.author
-        book.publishDate = new Date(req.body.publishDate)
-        book.pageCount = req.body.pageCount
-        book.description = req.body.description
-        if (req.body.cover != null && req.body.cover !== '') {
-            saveCover(book, req.body.cover)
+        if (req.body.title.length > 3)
+         {
+            book.title = req.body.title;
+            book.author = req.body.author;
+            book.publishDate = new Date(req.body.publishDate);
+            book.pageCount = req.body.pageCount;
+            book.description = req.body.description;
+            if (req.body.cover != null && req.body.cover !== '') {
+                saveCover(book, req.body.cover);
+            }
+            await book.save();
+            res.redirect(`/books/${book.id}`);
         }
-        await book.save()
-        res.redirect(`/books/${book.id}`)
+        else{
+           next(errorhandler("Title should be longer than 3 characters.",400))
+        }
     } catch (err) {
         next(errorhandler(err.message, 500))
     }
@@ -195,4 +205,4 @@ function saveCover(book, coverEncoded) {
     }
 }
 
-module.exports={getbooks,newbook,postbook,getbookbyid,deletebook,updatebook,editbook}
+module.exports = { getbooks, newbook, postbook, getbookbyid, deletebook, updatebook, editbook }
