@@ -17,8 +17,8 @@
 }
 
 body {
-  background-color:rgb(142, 63, 104)
-  /* background: linear-gradient(to right, var(--color-background-dark), var(--color-background-light)); */
+  /* background-color:rgb(108, 73, 91) */
+  background: linear-gradient(to right, var(--color-background-dark), var(--color-background-light));
 }
 
 .container {

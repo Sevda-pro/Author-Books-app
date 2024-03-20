@@ -7,8 +7,9 @@ const { errorhandler, successhandler } = require('./responseHandler')
  * Handle GET requests to the root route ("/") for retrieving books based on query parameters.
  * @param {Object} req - The request object containing query parameters.
  * @param {Object} res - The response object used for redirect and render.
+ * @param {Function} next - The next middleware function.
  */
-const getbooks = async (req, res) => {
+const getbooks = async (req, res,next) => {
     let query = Book.find()
     if (req.query.title != null && req.query.title != '') {
         query = query.regex('title', new RegExp(req.query.title, 'i'))
@@ -43,9 +44,10 @@ const newbook = async (req, res) => {
 * Handle POST requests to create a new book.
 * @param {Object} req - The request object containing book details in the body.
 * @param {Object} res - The response object used for redirecting.
+* @param {Function} next - The next middleware function.
 */
 
-const postbook = async (req, res) => {
+const postbook = async (req, res,next) => {
     try {
         if (req.body.title.length > 3) {
             const book = new Book({
@@ -72,9 +74,10 @@ const postbook = async (req, res) => {
 * Handle GET requests to retrieve a specific book by ID and render its details.
 * @param {Object} req - The request object containing the book ID.
 * @param {Object} res - The response object used for rendering the book details or redirecting.
+* @param {Function} next - The next middleware function.
 */
 
-const getbookbyid = async (req, res) => {
+const getbookbyid = async (req, res,next) => {
     try {
         const book = await Book.findById(req.params.id).populate('author').exec()
         res.render('books/show', { book: book })
@@ -87,9 +90,10 @@ const getbookbyid = async (req, res) => {
 * Handle GET requests to retrieve the form for editing an existing book.
 * @param {Object} req - The request object containing the book ID.
 * @param {Object} res - The response object used for rendering the book edit form or redirecting.
+* @param {Function} next - The next middleware function.
 */
 
-const editbook = async (req, res) => {
+const editbook = async (req, res,next) => {
     try {
         const book = await Book.findById(req.params.id)
         renderEditPage(res, book)
@@ -102,9 +106,10 @@ const editbook = async (req, res) => {
 * Handle PUT requests to update an existing book.
 * @param {Object} req - The request object containing the book ID and updated details.
 * @param {Object} res - The response object used for redirecting.
+* @param {Function} next - The next middleware function.
 */
 
-const updatebook = async (req, res) => {
+const updatebook = async (req, res,next) => {
     let book;
     try {
         if (req.body.title.length > 3)
@@ -132,13 +137,14 @@ const updatebook = async (req, res) => {
 * Handle DELETE requests to remove an existing book.
 * @param {Object} req - The request object containing the book ID.
 * @param {Object} res - The response object used for redirecting or rendering error messages.
+* @param {Function} next - The next middleware function.
 */
 
-const deletebook = async (req, res) => {
+const deletebook = async (req, res,next) => {
     let book
     try {
         book = await Book.findById(req.params.id)
-        await book.remove()
+        await book.deleteOne()
         res.redirect('/books')
     } catch (err) {
         next(errorhandler(err.message, 500))
@@ -164,7 +170,7 @@ async function renderEditPage(res, book, hasError = false) {
     renderFormPage(res, book, 'edit', hasError)
 }
 /**
- * Render the form page for either creating or editing a book.
+ * Render the form page for creating or editing a book.
  * @param {Object} res - The response object used for rendering the page.
  * @param {Object} book - The book object to be used in the form.
  * @param {string} form - The type of form.
@@ -187,7 +193,7 @@ async function renderFormPage(res, book, form, hasError = false) {
         }
         res.render(`books/${form}`, params)
     } catch (err) {
-        next(errorhandler(err.message, 500))
+        res.redirect('/books')
     }
 }
 /**
