@@ -17,7 +17,6 @@ app.use(expressLayouts)
 app.use(methodOverride('_method'))
 app.use(express.static('public'))
 app.use(bodyParser.urlencoded({extended: false }))
-const mongoose = require('mongoose')
 const connectDB = require('./db.js')
 
 app.use('/', indexRouter)
